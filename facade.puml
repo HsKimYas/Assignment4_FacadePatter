@@ -1,0 +1,71 @@
+@startuml
+skinparam classAttributeIconSize 0
+
+class Main <<Client>> {
+  +main(args: String[]): void
+}
+
+class MediaConversionFacade <<Facade>> {
+  -metadataReader: MetadataReader
+  -codecFactory: CodecFactory
+  -bitrateReader: BitrateReader
+  -audioMixer: AudioMixer
+  +convert(fileName: String, targetFormat: String): ConvertedMedia
+}
+
+class MetadataReader {
+  +read(fileName: String): MediaFile
+}
+
+class CodecFactory {
+  +create(targetFormat: String): Codec
+}
+
+interface Codec {
+  +getFormat(): String
+  +encode(videoTrack: String): String
+}
+
+class BitrateReader {
+  +normalize(sourceBitrate: int, targetFormat: String): int
+}
+
+class AudioMixer {
+  +fix(audioTrack: String): String
+}
+
+class MediaFile {
+  -fileName: String
+  -format: String
+  -bitrate: int
+  -audioTrack: String
+  -videoTrack: String
+}
+
+class ConvertedMedia {
+  -fileName: String
+  -targetFormat: String
+  -bitrate: int
+  -content: String
+}
+
+Main --> MediaConversionFacade : uses only
+MediaConversionFacade --> MetadataReader : coordinates
+MediaConversionFacade --> CodecFactory : coordinates
+MediaConversionFacade --> BitrateReader : coordinates
+MediaConversionFacade --> AudioMixer : coordinates
+MediaConversionFacade --> ConvertedMedia : returns
+MetadataReader --> MediaFile : creates
+CodecFactory --> Codec : creates
+
+note right of MediaConversionFacade
+The client sees one simple API.
+The facade hides the order and
+coordination of the subsystem.
+end note
+
+note bottom of MetadataReader
+Subsystems do not know the facade exists.
+They remain independently usable.
+end note
+@enduml
